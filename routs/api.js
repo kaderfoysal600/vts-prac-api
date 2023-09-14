@@ -476,17 +476,30 @@ router.delete("/deletePermissionGroupItem/:id", (req, res) => {
 
 
 // Role Permissions
-router.post("/addRolePermission", (req, res) => {
-  console.log(req.body);
+router.post("/addRolePermission", async (req, res) => {
 
-  RolePermission.create(req.body)
-    .then(data => {
-      console.log(data);
-      res.send(data);
-    })
-    .catch(err => {
-      res.json("error:" + err);
+
+  try {
+    const { permission } = req.body;
+    // Check if a record with the same permission_group_id already exists
+    const existingPermission = await RolePermission.findOne({ permission })
+
+    if (existingPermission) {
+      return res.status(409).json({ message: "Permission group already exists" });
+    }
+
+    // If it doesn't exist, create a new record
+    const newPermission = await RolePermission.create({
+      role_id: req.body.role_id,
+      permission_group_id: req.body.permission_group_id,
+      permission: req.body.permission,
     });
+    console.log(newPermission);
+    res.status(201).json(newPermission);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 router.get("/getRolePermissions", (req, res) => {
