@@ -83,7 +83,7 @@ router.delete("/deleteRole/:id", (req, res) => {
     })
     .catch(err => {
       console.log(err);
-      res.status(409).json( { success: false, error:err , message: "Cannot delete row because it is referenced by child records in the database." });
+      res.status(409).json({ success: false, error: err, message: "Cannot delete row because it is referenced by child records in the database." });
     });
 });
 
@@ -248,7 +248,7 @@ router.put('/editUser/:userId', upload.single('photo'), (req, res) => {
 
 
   User.findByPk(userId).then((user) => {
-    console.log('userToUpdate',user);
+    console.log('userToUpdate', user);
     if (user.photo) {
       const photoPath = user.photo;
       fs.unlink(photoPath, (err) => {
@@ -297,7 +297,7 @@ router.put('/editUser/:userId', upload.single('photo'), (req, res) => {
 
 router.delete("/deleteuser/:id", (req, res) => {
   User.findByPk(req.params.id).then((user) => {
-    console.log('usertodelete',user);
+    console.log('usertodelete', user);
     if (user.photo) {
       const photoPath = user.photo;
       fs.unlink(photoPath, (err) => {
@@ -307,7 +307,7 @@ router.delete("/deleteuser/:id", (req, res) => {
       });
     }
   })
-      
+
   User.destroy({
     where: {
       id: req.params.id
@@ -385,11 +385,11 @@ router.delete("/deletePermissionGroup/:id", (req, res) => {
           .then(() => {
             // res.json("Permission group deleted.");
             console.log('res', res.status);
-            res.status(200).json( { success: true, message: "Permission group deleted." });
+            res.status(200).json({ success: true, message: "Permission group deleted." });
           })
           .catch(err => {
             // res.json("error:" + err);
-            res.status(409).json( { success: false, error:err , message: "Cannot delete row because it is referenced by child records in the database." });
+            res.status(409).json({ success: false, error: err, message: "Cannot delete row because it is referenced by child records in the database." });
           });
       } else {
         res.json("Permission group not found.");
@@ -409,17 +409,17 @@ router.post("/addPermissionGroupItem", (req, res) => {
   PermissionGroupItem.create(req.body)
     .then(data => {
       console.log('dataasaasssas', data);
-      res.status(200).send({ message:"data added successfully",success: true, data: data});
+      res.status(200).send({ message: "data added successfully", success: true, data: data });
     })
     .catch(err => {
       res.json("error:" + err);
-      res.status(500).json( { success: false, error:err , message: "something went wrong" });
+      res.status(500).json({ success: false, error: err, message: "something went wrong" });
     });
 });
 
 router.get("/getPermissionGroupItems", (req, res) => {
   PermissionGroupItem.findAll()
-  //need to find ...permissiongroup name
+    //need to find ...permissiongroup name
     .then(permissionGroupItems => {
       console.log(permissionGroupItems);
       res.send(permissionGroupItems);
@@ -476,26 +476,73 @@ router.delete("/deletePermissionGroupItem/:id", (req, res) => {
 
 
 // Role Permissions
+// router.post("/addRolePermission", async (req, res) => {
+
+
+//   try {
+//     // const { permission } = req.body;
+//     // // Check if a record with the same permission_group_id already exists
+//     // const existingPermission = await RolePermission.findOne({ permission })
+
+//     // if (existingPermission) {
+//     //   return res.status(409).json({ message: "Permission group already exists" });
+//     // }
+//       console.log('permission Data', req.body.checkArray1[0].permission_group_items);
+//     let  newArr = req.body.checkArray1;
+//     newArr.forEach(element => {
+//          // If it doesn't exist, create a new record
+
+//          element.permission_group_items.forEach((elm)=> {
+//           console.log('elm -aaaa',elm);
+//           console.log('elm.isChecked',elm.isChecked);
+//           const newPermission =  RolePermission.create({
+//             role_id: req.body?.role_id,
+//             permission_group_id: element?.id,
+//             permission: elm?.itemData?.permission,
+//           });
+//           console.log('newPermission', newPermission);
+//           res.status(201).json(newPermission);
+//          })
+
+//     });
+
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+
+
+// Role Permissions
 router.post("/addRolePermission", async (req, res) => {
-
-
   try {
-    const { permission } = req.body;
-    // Check if a record with the same permission_group_id already exists
-    const existingPermission = await RolePermission.findOne({ permission })
+    const newArr = req.body.checkArray1;
+    const permissionsPromises = [];
 
-    if (existingPermission) {
-      return res.status(409).json({ message: "Permission group already exists" });
-    }
+    newArr.forEach((element) => {
+      element.permission_group_items.forEach((elm) => {
 
-    // If it doesn't exist, create a new record
-    const newPermission = await RolePermission.create({
-      role_id: req.body.role_id,
-      permission_group_id: req.body.permission_group_id,
-      permission: req.body.permission,
+        // const existingPermission = RolePermission.findOne({
+        //   permission: elm?.itemData?.permission,
+        // })
+        if (elm.isChecked) {
+          permissionsPromises.push(
+            RolePermission.create({
+              role_id: req.body?.role_id,
+              permission_group_id: element?.id,
+              permission: elm?.itemData?.permission,
+            })
+          );
+        }
+
+      });
     });
-    console.log(newPermission);
-    res.status(201).json(newPermission);
+
+    // Wait for all permission creations to complete
+    const permissions = await Promise.all(permissionsPromises);
+
+    res.status(201).json(permissions);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -506,7 +553,10 @@ router.get("/getRolePermissions", (req, res) => {
   RolePermission.findAll()
     .then(rolePermissions => {
       console.log(rolePermissions);
-      res.send(rolePermissions);
+      res.send({
+        message: "Role Permission Fetched successfully!",
+        data:rolePermissions
+      });
     })
     .catch(err => {
       res.json("error:" + err);
