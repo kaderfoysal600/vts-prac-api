@@ -569,53 +569,87 @@ router.delete("/deletePermissionGroupItem/:id", (req, res) => {
 // });
 
 router.post("/addRolePermission", async (req, res) => {
+
   try {
+    console.log('req.body', req.body);
     const newArr = req.body.checkArray1;
     console.log('newArr', newArr);
     const permissionsPromises = [];
 
     newArr.forEach((element) => {
       console.log('element121', element)
-      if(element.checked){
-           element.permission_group_items.forEach((elm) => {
-        if (elm.isChecked) {
-          
-          permissionsPromises.push(
-            RolePermission.create({
-              role_id: req.body?.role_id,
-              permission_group_id: element?.id,
-              permission: elm?.itemData?.permission,
-            })
-          );
-        } else if (!elm.isChecked) {
-          RolePermission.findOne({
-            where: {
-              permission: elm?.itemData?.permission
-            }
-          })
-            .then((rolePermission) => {
-              if (rolePermission) {
-                rolePermission.destroy()
-                  .then(() => {
-                    res.send({
-                      message: "Role Permission Deleted successfully!"
-                    });
-                  })
-                  .catch((err) => {
-                    res.json("error:" + err);
-                  });
-              } else {
-                res.json("Role permission not found.");
+      if (element.checked) {
+        console.log('now data will add')
+        element.permission_group_items.forEach((elm) => {
+          if (elm.isChecked) {
+            console.log('now chield data will add')
+            permissionsPromises.push(
+              RolePermission.create({
+                role_id: req.body?.role_id,
+                permission_group_id: element?.id,
+                permission: elm?.itemData?.permission,
+              })
+            );
+          } else if (!elm.isChecked) {
+            console.log('now chield data will delete')
+            RolePermission.findOne({
+              where: {
+                permission: elm?.itemData?.permission
               }
             })
-            .catch((err) => {
-              res.json("error:" + err);
-            });
-        }
-      });
+              .then((rolePermission) => {
+                if (rolePermission) {
+                  rolePermission.destroy()
+                    .then(() => {
+                      res.send({
+                        message: "Role Permission Deleted successfully!"
+                      });
+                    })
+                    .catch((err) => {
+                      res.json("error:" + err);
+                    });
+                } else {
+                  res.json("Role permission not found.");
+                }
+              })
+              .catch((err) => {
+                res.json("error:" + err);
+              });
+          }
+        });
       }
-      // else if(!element.checked){}
-   
+      else if(!element.checked){
+        console.log('element checked false')
+        element.permission_group_items.forEach((elm) => {
+         if (!elm.isChecked) {
+            console.log('now chield data will delete')
+            RolePermission.findOne({
+              where: {
+                permission: elm?.itemData?.permission
+              }
+            })
+              .then((rolePermission) => {
+                if (rolePermission) {
+                  rolePermission.destroy()
+                    .then(() => {
+                      res.send({
+                        message: "Role Permission Deleted successfully!"
+                      });
+                    })
+                    .catch((err) => {
+                      res.json("error:" + err);
+                    });
+                } else {
+                  res.json("Role permission not found.");
+                }
+              })
+              .catch((err) => {
+                res.json("error:" + err);
+              });
+          }
+        });
+      }
+
     });
 
     // Wait for all permission creations to complete
