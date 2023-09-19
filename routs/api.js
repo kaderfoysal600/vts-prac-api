@@ -662,13 +662,20 @@ router.post("/addRolePermission", async (req, res) => {
   }
 });
 
-router.get("/getRolePermissions", (req, res) => {
+router.get("/getRolePermissions/:id", (req, res) => {
+  console.log('req.params', req.params)
   RolePermission.findAll()
     .then(rolePermissions => {
-      console.log(rolePermissions);
+      console.log('rolePermissions', rolePermissions);
+      const filteredData = rolePermissions.filter((item)=> {
+        console.log('item.role_id', item.role_id);
+        console.log('req.params.id', req.params.id);
+       return item.role_id = req.params.id
+      })
+      console.log('filteredData', filteredData);
       res.send({
         message: "Role Permission Fetched successfully!",
-        data: rolePermissions
+        data: filteredData
       });
     })
     .catch(err => {
