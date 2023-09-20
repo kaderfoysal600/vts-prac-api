@@ -474,99 +474,7 @@ router.delete("/deletePermissionGroupItem/:id", (req, res) => {
     });
 });
 
-
-// Role Permissions
-// router.post("/addRolePermission", async (req, res) => {
-
-
-//   try {
-//     // const { permission } = req.body;
-//     // // Check if a record with the same permission_group_id already exists
-//     // const existingPermission = await RolePermission.findOne({ permission })
-
-//     // if (existingPermission) {
-//     //   return res.status(409).json({ message: "Permission group already exists" });
-//     // }
-//       console.log('permission Data', req.body.checkArray1[0].permission_group_items);
-//     let  newArr = req.body.checkArray1;
-//     newArr.forEach(element => {
-//          // If it doesn't exist, create a new record
-
-//          element.permission_group_items.forEach((elm)=> {
-//           console.log('elm -aaaa',elm);
-//           console.log('elm.isChecked',elm.isChecked);
-//           const newPermission =  RolePermission.create({
-//             role_id: req.body?.role_id,
-//             permission_group_id: element?.id,
-//             permission: elm?.itemData?.permission,
-//           });
-//           console.log('newPermission', newPermission);
-//           res.status(201).json(newPermission);
-//          })
-
-//     });
-
-
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
-
-// Role Permissions
-// router.post("/addRolePermission", async (req, res) => {
-//   try {
-//     const newArr = req.body.checkArray1;
-//     const permissionsPromises = [];
-
-//     newArr.forEach((element) => {
-//       element.permission_group_items.forEach((elm) => {
-//         if (elm.isChecked) {
-//           permissionsPromises.push(
-//             RolePermission.create({
-//               role_id: req.body?.role_id,
-//               permission_group_id: element?.id,
-//               permission: elm?.itemData?.permission,
-//             })
-//           );
-//         }
-//         else if (!elm.isChecked) {
-//           console.log("elm", elm)
-//           RolePermission.findByPk(elm?.itemData?.id)
-//             .then(rolePermission => {
-//               if (rolePermission) {
-//                 rolePermission.destroy()
-//                   .then(() => {
-//                     res.send({
-//                       message: "Role Permission Deleted successfully!"
-//                     });
-//                   })
-//                   .catch(err => {
-//                     res.json("error:" + err);
-//                   });
-//               } else {
-//                 res.json("Role permission not found.");
-//               }
-//             })
-//             .catch(err => {
-//               res.json("error:" + err);
-//             });
-//         }
-
-//       });
-
-//     });
-
-//     // Wait for all permission creations to complete
-//     const permissions = await Promise.all(permissionsPromises);
-
-//     res.status(201).json(permissions);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
+//role permission
 
 router.post("/addRolePermission", async (req, res) => {
 
@@ -581,8 +489,8 @@ router.post("/addRolePermission", async (req, res) => {
       console.log('element121', element)
       if (element.checked) {
         console.log('now data will add')
-        element.permission_group_items.forEach((elm) => {
-          console.log('elmc', elm);
+        element.permission_group_items.map((elm) => {
+        console.log('elmc', elm);
 
       RolePermission.findOne({
             permission: elm?.itemData?.permission,
@@ -593,7 +501,9 @@ router.post("/addRolePermission", async (req, res) => {
 
             
 
+// if(elm.itemData.permission !== permission.permission){
 
+// }
 
             if (elm.isChecked) {
               console.log('now chield data will add101', req.body?.role_id)        
@@ -696,6 +606,148 @@ router.post("/addRolePermission", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
+
+
+
+
+
+
+
+// router.post("/addRolePermission", async (req, res) => {
+
+//   try {
+//     console.log('req.body', req.body);
+//     console.log('now chield data will add101', req.body?.role_id)
+//     const newArr = req.body.checkArray1;
+//     console.log('newArr', newArr);
+//     const permissionsPromises = [];
+
+//     newArr.forEach((element) => {
+//       console.log('element121', element)
+//       if (element.checked) {
+//         console.log('now data will add')
+//         element.permission_group_items.map((elm) => {
+//         console.log('elmc', elm);
+
+//       RolePermission.findOne({
+//             permission: elm?.itemData?.permission,
+//             role_id : req.body.role_id
+//           }).then((permission) => {
+//             console.log('permission w add', permission);
+
+           
+
+//           }).catch((err) => {
+//             console.log('err', err)
+//           })
+
+        
+
+//           if (elm.isChecked) {
+//             permissionsPromises.push(
+//               RolePermission.create({
+//                 role_id: req.body?.role_id,
+//                 permission_group_id: element?.id,
+//                 permission: elm?.itemData?.permission,
+//               })
+//             );
+          
+//           } else if (!elm.isChecked) {
+//             console.log('now chield data will delete')
+//             RolePermission.findOne({
+//               where: {
+//                 permission: elm?.itemData?.permission
+//               }
+//             })
+//               .then((rolePermission) => {
+//                 if (rolePermission) {
+//                   rolePermission.destroy()
+//                       .then(() => {
+//                         res.send({
+//                           message: "Role Permission Deleted successfully!"
+//                         });
+//                       })
+//                       .catch((err) => {
+//                         res.json("error:" + err);
+//                       });
+
+//                 } else {
+//                   res.json("Role permission not found.");
+//                 }
+//               })
+//               .catch((err) => {
+//                 res.json("error:" + err);
+//               });
+//           }
+
+
+//         });
+//       }
+//       else if (!element.checked) {
+//         console.log('element checked false')
+//         element.permission_group_items.forEach((elm) => {
+//           if (!elm.isChecked) {
+//             console.log('now chield data will delete')
+//             RolePermission.findOne({
+//               where: {
+//                 permission: elm?.itemData?.permission,
+//                 role_id:req.body?.role_id
+//               }
+//             })
+//               .then((rolePermission) => {
+//                 if (rolePermission) {
+//                   console.log('rolePermission', rolePermission);
+//                   rolePermission.destroy()
+//                     .then(() => {
+//                       console.log('rolePermission101', rolePermission);
+//                       res.send({
+//                         message: "Role Permission Deleted successfully!"
+//                       });
+//                     })
+//                     .catch((err) => {
+//                       res.json("error:" + err);
+//                     });
+
+//                 } else {
+//                   res.json("Role permission not found.");
+//                 }
+//               })
+//               .catch((err) => {
+//                 res.json("error:" + err);
+//               });
+//           }
+//         });
+//       }
+
+//     });
+
+//     // Wait for all permission creations to complete
+//     const permissions = await Promise.all(permissionsPromises);
+
+//     res.status(201).json(permissions);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 router.get("/getRolePermissions/:id", (req, res) => {
   console.log('req.params', req.params)
