@@ -476,20 +476,77 @@ router.delete("/deletePermissionGroupItem/:id", (req, res) => {
 
 //role permission
 
+// router.post("/addRolePermission", async (req, res) => {
+//   console.log(' req.body', req.body);
+//   let newArr = req.body[0].itemToUpdate;
+//   let itemDelete = req.body[0].itemToDelete;
+
+
+//   try {
+
+
+//     const permissionsPromises = [];
+
+//     newArr.forEach((element) => {
+//       console.log('element121', element)
+//       console.log('now data will add')
+
+//       permissionsPromises.push(
+//         RolePermission.create({
+//           role_id: req.body[1]?.role_id,
+//           permission_group_id: element?.permission_group_id,
+//           permission: element?.permission,
+//         })
+//       );
+
+//     });
+//     itemDelete.forEach(elmD => {
+//       console.log('elmD', elmD);
+//       RolePermission.findOne({
+//         where: {
+//           permission: elmD?.permission,
+//           role_id: req.body[1]?.role_id
+//         }
+//       }).then((rolePermission) => {
+//         if (rolePermission) {
+//           rolePermission.destroy()
+//             .then(() => {
+//               res.send({
+//                 message: "Role Permission Deleted successfully!"
+//               });
+//             })
+//             .catch((err) => {
+//               res.json("error:" + err);
+//             });
+//         }
+//       }).catch(err => {
+//         console.log('err', err);
+//         res.json("error:" + err);
+//       });
+
+//     })
+//     // Wait for all permission creations to complete
+//     const permissions = await Promise.all(permissionsPromises);
+
+//     res.status(201).json(permissions);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+
+
 router.post("/addRolePermission", async (req, res) => {
-  console.log(' req.body', req.body);
+  console.log('req.body', req.body);
   let newArr = req.body[0].itemToUpdate;
   let itemDelete = req.body[0].itemToDelete;
 
-
   try {
-
-
     const permissionsPromises = [];
 
     newArr.forEach((element) => {
-      console.log('element121', element)
-      console.log('now data will add')
+      console.log('element121', element);
+      console.log('now data will add');
 
       permissionsPromises.push(
         RolePermission.create({
@@ -498,40 +555,35 @@ router.post("/addRolePermission", async (req, res) => {
           permission: element?.permission,
         })
       );
-
     });
-    itemDelete.forEach(elmD => {
+
+    const deletePromises = itemDelete.map((elmD) => {
       console.log('elmD', elmD);
-      RolePermission.findOne({
+      return RolePermission.findOne({
         where: {
           permission: elmD?.permission,
           role_id: req.body[1]?.role_id
         }
-      }).then((rolePermission) => {
-        if (rolePermission) {
-          rolePermission.destroy()
-            .then(() => {
-              res.send({
-                message: "Role Permission Deleted successfully!"
-              });
-            })
-            .catch((err) => {
-              res.json("error:" + err);
-            });
-        }
       })
+        .then((rolePermission) => {
+          if (rolePermission) {
+            return rolePermission.destroy();
+          }
+        }).catch(err => {
+          console.log('err', err);
+          res.json("error:" + err);
+        });
+    });
 
-    })
-    // Wait for all permission creations to complete
-    const permissions = await Promise.all(permissionsPromises);
+    // Wait for all permission creations and deletions to complete
+    await Promise.all([...permissionsPromises, ...deletePromises]);
 
-    res.status(201).json(permissions);
+    res.status(201).json({ message: "Role Permissions updated successfully!" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 
 
