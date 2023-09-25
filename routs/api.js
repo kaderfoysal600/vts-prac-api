@@ -228,15 +228,15 @@ router.get('/protected-route', authenticateToken, (req, res) => {
 //           // res.send({token,data});
 // })
 
-router.get("/listUser", (req, res) => {
-  User.findAll()
-    .then(data => {
-      // console.log('user data', data);
-      res.send(data);
-    })
-    .catch(err => {
-      console.log(err);
-    });
+router.get("/listUser", async (req, res) => {
+  try {
+    const users = await User.findAll()
+    res.send(users);
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 router.put('/editUser/:userId', upload.single('photo'), (req, res) => {
@@ -476,66 +476,6 @@ router.delete("/deletePermissionGroupItem/:id", (req, res) => {
 
 //role permission
 
-// router.post("/addRolePermission", async (req, res) => {
-//   console.log(' req.body', req.body);
-//   let newArr = req.body[0].itemToUpdate;
-//   let itemDelete = req.body[0].itemToDelete;
-
-
-//   try {
-
-
-//     const permissionsPromises = [];
-
-//     newArr.forEach((element) => {
-//       console.log('element121', element)
-//       console.log('now data will add')
-
-//       permissionsPromises.push(
-//         RolePermission.create({
-//           role_id: req.body[1]?.role_id,
-//           permission_group_id: element?.permission_group_id,
-//           permission: element?.permission,
-//         })
-//       );
-
-//     });
-//     itemDelete.forEach(elmD => {
-//       console.log('elmD', elmD);
-//       RolePermission.findOne({
-//         where: {
-//           permission: elmD?.permission,
-//           role_id: req.body[1]?.role_id
-//         }
-//       }).then((rolePermission) => {
-//         if (rolePermission) {
-//           rolePermission.destroy()
-//             .then(() => {
-//               res.send({
-//                 message: "Role Permission Deleted successfully!"
-//               });
-//             })
-//             .catch((err) => {
-//               res.json("error:" + err);
-//             });
-//         }
-//       }).catch(err => {
-//         console.log('err', err);
-//         res.json("error:" + err);
-//       });
-
-//     })
-//     // Wait for all permission creations to complete
-//     const permissions = await Promise.all(permissionsPromises);
-
-//     res.status(201).json(permissions);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
-
 router.post("/addRolePermission", async (req, res) => {
   console.log('req.body', req.body);
   let newArr = req.body[0].itemToUpdate;
@@ -584,147 +524,6 @@ router.post("/addRolePermission", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-
-
-
-
-
-
-
-// router.post("/addRolePermission", async (req, res) => {
-
-//   try {
-//     console.log('req.body', req.body);
-//     console.log('now chield data will add101', req.body?.role_id)
-//     const newArr = req.body.checkArray1;
-//     console.log('newArr', newArr);
-//     const permissionsPromises = [];
-
-//     newArr.forEach((element) => {
-//       console.log('element121', element)
-//       if (element.checked) {
-//         console.log('now data will add')
-//         element.permission_group_items.map((elm) => {
-//         console.log('elmc', elm);
-
-//       RolePermission.findOne({
-//             permission: elm?.itemData?.permission,
-//             role_id : req.body.role_id
-//           }).then((permission) => {
-//             console.log('permission w add', permission);
-
-
-
-//           }).catch((err) => {
-//             console.log('err', err)
-//           })
-
-
-
-//           if (elm.isChecked) {
-//             permissionsPromises.push(
-//               RolePermission.create({
-//                 role_id: req.body?.role_id,
-//                 permission_group_id: element?.id,
-//                 permission: elm?.itemData?.permission,
-//               })
-//             );
-
-//           } else if (!elm.isChecked) {
-//             console.log('now chield data will delete')
-//             RolePermission.findOne({
-//               where: {
-//                 permission: elm?.itemData?.permission
-//               }
-//             })
-//               .then((rolePermission) => {
-//                 if (rolePermission) {
-//                   rolePermission.destroy()
-//                       .then(() => {
-//                         res.send({
-//                           message: "Role Permission Deleted successfully!"
-//                         });
-//                       })
-//                       .catch((err) => {
-//                         res.json("error:" + err);
-//                       });
-
-//                 } else {
-//                   res.json("Role permission not found.");
-//                 }
-//               })
-//               .catch((err) => {
-//                 res.json("error:" + err);
-//               });
-//           }
-
-
-//         });
-//       }
-//       else if (!element.checked) {
-//         console.log('element checked false')
-//         element.permission_group_items.forEach((elm) => {
-//           if (!elm.isChecked) {
-//             console.log('now chield data will delete')
-//             RolePermission.findOne({
-//               where: {
-//                 permission: elm?.itemData?.permission,
-//                 role_id:req.body?.role_id
-//               }
-//             })
-//               .then((rolePermission) => {
-//                 if (rolePermission) {
-//                   console.log('rolePermission', rolePermission);
-//                   rolePermission.destroy()
-//                     .then(() => {
-//                       console.log('rolePermission101', rolePermission);
-//                       res.send({
-//                         message: "Role Permission Deleted successfully!"
-//                       });
-//                     })
-//                     .catch((err) => {
-//                       res.json("error:" + err);
-//                     });
-
-//                 } else {
-//                   res.json("Role permission not found.");
-//                 }
-//               })
-//               .catch((err) => {
-//                 res.json("error:" + err);
-//               });
-//           }
-//         });
-//       }
-
-//     });
-
-//     // Wait for all permission creations to complete
-//     const permissions = await Promise.all(permissionsPromises);
-
-//     res.status(201).json(permissions);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 router.get("/getRolePermissions/:id", (req, res) => {
   console.log('req.params', req.params)
