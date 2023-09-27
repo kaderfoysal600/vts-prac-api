@@ -28,11 +28,8 @@ var upload = multer({ storage: storage });
 //role
 
 router.post("/addRole", (req, res) => {
-
-  console.log(req.body);
   Role.create(req.body)
     .then(data => {
-      console.log(data);
       res.send(data);
     })
     .catch(err => {
@@ -43,23 +40,19 @@ router.post("/addRole", (req, res) => {
 router.get("/listRole", (req, res) => {
   Role.findAll()
     .then(data => {
-      console.log(data);
       res.send(data);
     })
     .catch(err => {
-      console.log(err);
     });
 });
 
 router.put("/updateRole/:id", (req, res) => {
-  //console.log(req.body);
   Role.update(req.body, {
     where: {
       id: req.params.id
     }
   })
     .then(data => {
-      console.log(data);
       res.send({
         message: "Role Updated successfully!"
       });
@@ -76,13 +69,11 @@ router.delete("/deleteRole/:id", (req, res) => {
     }
   })
     .then(data => {
-      console.log(data);
       res.send({
         message: "Role Deleted successfully!"
       });
     })
     .catch(err => {
-      console.log(err);
       res.status(409).json({ success: false, error: err, message: "Cannot delete row because it is referenced by child records in the database." });
     });
 });
@@ -103,7 +94,6 @@ router.post("/addUser", upload.single("photo"), async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ error: "Email is already in use." });
     }
-    console.log('request....................', req)
     const file = req.file
     User.create({
       first_name: req.body.first_name,
@@ -123,7 +113,6 @@ router.post("/addUser", upload.single("photo"), async (req, res) => {
     })
 
       .then(data => {
-        console.log("data", data)
 
         res.status(200).send(
           {
@@ -167,12 +156,13 @@ router.post("/login", async (req, res) => {
     // @ts-ignore
     req.session.token = token;
 
-
     res.status(200).send(
       {
         message: "login successfull", status: "ok", data: {
+
           id: user.id,
           email: user.email,
+          role: user.role_id,
           // email: user.email,
           accessToken: token
         }
@@ -204,30 +194,6 @@ router.get('/protected-route', authenticateToken, (req, res) => {
   res.status(200).json({ success: true, message: "Protected route accessed." });
 });
 
-// router.post("/login", (req, res)=> {
-//   const { username, password } = req.body;
-//           // // Create a JWT token
-//           // const token = jwt.sign(
-//           //   { userId: data.id },
-//           //   jwtSecretKey,
-//           //   {
-//           //     algorithm: 'HS256',
-//           //     allowInsecureKeySizes: true,
-//           //     expiresIn: 86400, // 24 hours
-//           //   });
-
-//           // // Store the token in session storage
-//           // // @ts-ignore
-//           // req.session.token = token;
-//           // // @ts-ignore
-//           // req.session.user = User;
-//           // // @ts-ignore
-//           // console.log(' req.session.user', req.session.user);
-//           // // @ts-ignore
-//           // console.log('req.session.token', req.session.token)
-//           // res.send({token,data});
-// })
-
 router.get("/listUser", async (req, res) => {
   try {
     const users = await User.findAll()
@@ -246,16 +212,17 @@ router.put('/editUser/:userId', upload.single('photo'), (req, res) => {
   console.log('req.body:', req.body);
 
 
-
   User.findByPk(userId).then((user) => {
     console.log('userToUpdate', user);
-    if (user.photo) {
-      const photoPath = user.photo;
-      fs.unlink(photoPath, (err) => {
-        if (err) {
-          console.error("Error deleting photo:", err);
-        }
-      });
+    if (file) {
+      if (user.photo) {
+        const photoPath = user.photo;
+        fs.unlink(photoPath, (err) => {
+          if (err) {
+            console.error("Error deleting photo:", err);
+          }
+        });
+      }
     }
   })
   // Prepare the updated user data
@@ -270,8 +237,16 @@ router.put('/editUser/:userId', upload.single('photo'), (req, res) => {
     gender: req.body.gender,
   };
 
+  console.log('updatedUserData12', updatedUserData);
+
+  console.log('file', file);
   if (file) {
+
     updatedUserData.photo = file.path; // Update the photo path if a new image is uploaded
+  }
+  if (!file) {
+    console.log('req.body.photo[0]', req.body.photo[0]);
+    updatedUserData.photo = req.body.photo[0];
   }
 
   // if (req.body.password) {
@@ -279,10 +254,12 @@ router.put('/editUser/:userId', upload.single('photo'), (req, res) => {
   // }
 
   User.update(updatedUserData, {
+
     where: { id: userId },
   })
     .then((result) => {
-      if (result[0] === 1) {
+      console.log('result', result)
+      if (result) {
         res.send({
           message: "User Updated successfully!"
         });
@@ -297,7 +274,6 @@ router.put('/editUser/:userId', upload.single('photo'), (req, res) => {
 
 router.delete("/deleteuser/:id", (req, res) => {
   User.findByPk(req.params.id).then((user) => {
-    console.log('usertodelete', user);
     if (user.photo) {
       const photoPath = user.photo;
       fs.unlink(photoPath, (err) => {
@@ -314,13 +290,11 @@ router.delete("/deleteuser/:id", (req, res) => {
     }
   })
     .then(data => {
-      console.log(data);
       res.send({
         message: "User was deleted successfully!"
       });
     })
     .catch(err => {
-      console.log(err);
     });
 });
 
@@ -329,11 +303,9 @@ router.delete("/deleteuser/:id", (req, res) => {
 //permissions groups
 
 router.post("/addPermissionGroup", (req, res) => {
-  console.log(req.body);
 
   PermissionGroup.create(req.body)
     .then(data => {
-      console.log(data);
       res.send(data);
     })
     .catch(err => {
@@ -344,7 +316,6 @@ router.post("/addPermissionGroup", (req, res) => {
 router.get("/getPermissionGroups", (req, res) => {
   PermissionGroup.findAll()
     .then(permissionGroups => {
-      console.log(permissionGroups);
       res.send(permissionGroups);
     })
     .catch(err => {
@@ -360,7 +331,6 @@ router.put("/updatePermissionGroup/:id", (req, res) => {
       if (permissionGroup) {
         permissionGroup.update(req.body)
           .then(updatedGroup => {
-            console.log(updatedGroup);
             res.send(updatedGroup);
           })
           .catch(err => {
@@ -384,7 +354,6 @@ router.delete("/deletePermissionGroup/:id", (req, res) => {
         permissionGroup.destroy()
           .then(() => {
             // res.json("Permission group deleted.");
-            console.log('res', res.status);
             res.status(200).json({ success: true, message: "Permission group deleted." });
           })
           .catch(err => {
@@ -404,11 +373,9 @@ router.delete("/deletePermissionGroup/:id", (req, res) => {
 //permissions group items
 
 router.post("/addPermissionGroupItem", (req, res) => {
-  console.log(req.body);
 
   PermissionGroupItem.create(req.body)
     .then(data => {
-      console.log('dataasaasssas', data);
       res.status(200).send({ message: "data added successfully", success: true, data: data });
     })
     .catch(err => {
@@ -421,7 +388,6 @@ router.get("/getPermissionGroupItems", (req, res) => {
   PermissionGroupItem.findAll()
     //need to find ...permissiongroup name
     .then(permissionGroupItems => {
-      console.log(permissionGroupItems);
       res.send(permissionGroupItems);
     })
     .catch(err => {
@@ -437,7 +403,6 @@ router.put("/updatePermissionGroupItem/:id", (req, res) => {
       if (permissionGroupItem) {
         permissionGroupItem.update(req.body)
           .then(updatedItem => {
-            console.log(updatedItem);
             res.send(updatedItem);
           })
           .catch(err => {
@@ -477,7 +442,6 @@ router.delete("/deletePermissionGroupItem/:id", (req, res) => {
 //role permission
 
 router.post("/addRolePermission", async (req, res) => {
-  console.log('req.body', req.body);
   let newArr = req.body[0].itemToUpdate;
   let itemDelete = req.body[0].itemToDelete;
 
@@ -485,8 +449,6 @@ router.post("/addRolePermission", async (req, res) => {
     const permissionsPromises = [];
 
     newArr.forEach((element) => {
-      console.log('element121', element);
-      console.log('now data will add');
 
       permissionsPromises.push(
         RolePermission.create({
@@ -498,7 +460,6 @@ router.post("/addRolePermission", async (req, res) => {
     });
 
     const deletePromises = itemDelete.map((elmD) => {
-      console.log('elmD', elmD);
       return RolePermission.findOne({
         where: {
           permission: elmD?.permission,
@@ -510,7 +471,6 @@ router.post("/addRolePermission", async (req, res) => {
             return rolePermission.destroy();
           }
         }).catch(err => {
-          console.log('err', err);
           res.json("error:" + err);
         });
     });
@@ -526,21 +486,15 @@ router.post("/addRolePermission", async (req, res) => {
 });
 
 router.get("/getRolePermissions/:id", (req, res) => {
-  console.log('req.params', req.params)
   RolePermission.findAll()
     .then(rolePermissions => {
-      console.log('rolePermissions', rolePermissions);
       const filteredData = rolePermissions.filter((item) => {
-        console.log('item.role_id', item.role_id);
-        console.log('req.params.id', req.params.id);
         return item.role_id == req.params.id
       })
-      console.log('filteredData', filteredData);
       res.send({
         message: "Role Permission Fetched successfully!",
         data: filteredData
       });
-      console.log('data', res)
     })
     .catch(err => {
       res.json("error:" + err);
@@ -555,7 +509,6 @@ router.put("/updateRolePermission/:id", (req, res) => {
       if (rolePermission) {
         rolePermission.update(req.body)
           .then(updatedPermission => {
-            console.log(updatedPermission);
             res.send(updatedPermission);
           })
           .catch(err => {
