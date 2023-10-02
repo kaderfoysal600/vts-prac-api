@@ -1,0 +1,1 @@
+ ALTER TABLE `permission_groups` ADD `status` INT NOT NULL DEFAULT '0' AFTER `updated_by`;

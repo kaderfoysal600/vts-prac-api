@@ -8,7 +8,9 @@ const PermissionGroup = sequelize.define("permission_groups", {
   created_by: { type: DataTypes.STRING },
   updated_time: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, onUpdate: DataTypes.NOW },
   updated_by: { type: DataTypes.STRING },
-  status: { type: DataTypes.ENUM('Active', 'Inactive'), allowNull: false }
+  status: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 module.exports = PermissionGroup;
+
+

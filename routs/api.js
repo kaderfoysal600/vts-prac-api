@@ -395,6 +395,36 @@ router.get("/getPermissionGroupItems", (req, res) => {
     });
 });
 
+//extra getPermissionGroupItems
+router.get("/getPermissionGroupItems1", (req, res) => {
+
+  // @ts-ignore
+  const page = parseInt(req?.query?.page) || 1;
+  console.log('page', page);
+  // @ts-ignore
+  const size = parseInt(req?.query?.size) || 10;
+  console.log('size', size);
+
+  const startIndex = (page - 1) * size;
+  const endIndex = startIndex + size;
+
+
+  PermissionGroupItem.findAll()
+    //need to find ...permissiongroup name
+    .then(permissionGroupItems => {
+      const paginatedUsers = permissionGroupItems.slice(startIndex, endIndex);
+      // res.send(paginatedUsers);
+      res.json({ data: paginatedUsers, totalData: permissionGroupItems.length });
+    })
+    .catch(err => {
+      res.json("error:" + err);
+    });
+});
+
+
+
+
+
 router.put("/updatePermissionGroupItem/:id", (req, res) => {
   const id = req.params.id;
 
