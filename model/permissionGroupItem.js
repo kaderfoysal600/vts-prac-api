@@ -11,7 +11,7 @@ const PermissionGroupItem = sequelize.define("permission_group_items", {
   created_by: { type: DataTypes.STRING },
   updated_time: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, onUpdate: DataTypes.NOW },
   updated_by: { type: DataTypes.STRING },
-  status: { type: DataTypes.STRING },
+  status: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 module.exports = PermissionGroupItem;
