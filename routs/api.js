@@ -419,6 +419,63 @@ router.get("/getPermissionGroupItems1", (req, res) => {
 
 
 
+// get all permission group items with search
+
+router.post("/getPermissionGroupItemsSearch", (req, res) => {
+
+  console.log('req?.query', req?.query);
+  console.log('req?.body.filteredData', req?.body.filteredData);
+  console.log('req?.body.groupId', req?.body.groupId);
+  console.log('req?.body.filterStatus', req?.body.filterStatus);
+  let filteredData = req.body.filteredData;
+  let groupId = req.body.groupId;
+  let filterStatus = req.body.filterStatus;
+  
+  // @ts-ignore
+  const page = parseInt(req?.query?.page) || 1;
+  // @ts-ignore
+  const size = parseInt(req?.query?.size) || 10;
+
+  const startIndex = (page - 1) * size;
+  const endIndex = startIndex + size;
+
+
+
+
+
+  ///search filtering
+
+
+  // let searchVal = [];
+  // if (filteredData) {
+  //   let x = PermissionGroupItem.filter((item) => item.name.toLowerCase().includes(filteredData));
+  //   searchVal = [...x];
+  //   if (groupId) {
+  //     let y = searchVal.filter((item1) => groupId === item1?.permission_group_id)
+  //     searchVal = [...y];
+  //     console.log('this.filterStatus', filterStatus);
+
+  //     if (filterStatus === 0 || filterStatus === 1) {
+  //       let z = searchVal.filter((v) => v.status === filterStatus);
+  //       console.log('z', z);
+  //       searchVal = [...z];
+  //     }
+  //   }
+  //   console.log('searchVal', searchVal);
+  // }
+
+  PermissionGroupItem.findAll()
+    .then(permissionGroupItems => {
+      console.log('permissionGroupItems', permissionGroupItems);
+      const paginatedUsers = permissionGroupItems.slice(startIndex, endIndex);
+      res.json({ data: paginatedUsers, totalData: permissionGroupItems.length });
+    })
+    .catch(err => {
+      res.json("error:" + err);
+    });
+});
+
+
 
 
 router.put("/updatePermissionGroupItem/:id", (req, res) => {
