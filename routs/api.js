@@ -430,45 +430,101 @@ router.post("/getPermissionGroupItemsSearch", (req, res) => {
   let filteredData = req.body.filteredData;
   let groupId = req.body.groupId;
   let filterStatus = req.body.filterStatus;
-  
+
   // @ts-ignore
   const page = parseInt(req?.query?.page) || 1;
   // @ts-ignore
   const size = parseInt(req?.query?.size) || 10;
 
+  console.log('page', req?.query?.page);
+  console.log('size', req?.query?.size);
+  console.log('req.body', req?.body);
+
   const startIndex = (page - 1) * size;
   const endIndex = startIndex + size;
 
 
-
-
-
-  ///search filtering
-
-
-  // let searchVal = [];
-  // if (filteredData) {
-  //   let x = PermissionGroupItem.filter((item) => item.name.toLowerCase().includes(filteredData));
-  //   searchVal = [...x];
-  //   if (groupId) {
-  //     let y = searchVal.filter((item1) => groupId === item1?.permission_group_id)
-  //     searchVal = [...y];
-  //     console.log('this.filterStatus', filterStatus);
-
-  //     if (filterStatus === 0 || filterStatus === 1) {
-  //       let z = searchVal.filter((v) => v.status === filterStatus);
-  //       console.log('z', z);
-  //       searchVal = [...z];
-  //     }
-  //   }
-  //   console.log('searchVal', searchVal);
-  // }
-
   PermissionGroupItem.findAll()
     .then(permissionGroupItems => {
+
+      let searchVal = [];
+
       console.log('permissionGroupItems', permissionGroupItems);
-      const paginatedUsers = permissionGroupItems.slice(startIndex, endIndex);
-      res.json({ data: paginatedUsers, totalData: permissionGroupItems.length });
+      if (filteredData) {
+        let x = permissionGroupItems.filter((item) => item.name.toLowerCase().includes(filteredData))
+        searchVal = [...x];
+        if (groupId) {
+          let y = searchVal.filter((item1) => groupId === item1?.permission_group_id)
+          searchVal = [...y];
+          console.log('this.filterStatus', filterStatus);
+
+          if (filterStatus === 0 || filterStatus === 1) {
+            let z = searchVal.filter((v) => v.status === filterStatus);
+            console.log('z', z);
+            searchVal = [...z];
+          }
+        }
+      }
+      if (groupId && filterStatus === 0 || filterStatus === 1 && !filteredData) {
+        let y = permissionGroupItems.filter((item) => {
+
+          return groupId === item?.permission_group_id
+        })
+        console.log('y', y);
+        searchVal = [...y];
+
+        if (filterStatus === 0 || filterStatus === 1) {
+          let z = searchVal.filter((v) => v.status === filterStatus);
+          console.log('z', z);
+          searchVal = [...z];
+        }
+      }
+      if (groupId && !(filterStatus === 0 || filterStatus === 1) && !filteredData) {
+        let y = permissionGroupItems.filter((item) => {
+
+          return groupId === item?.permission_group_id
+        })
+        console.log('y', y);
+        searchVal = [...y];
+      }
+      if ((filterStatus === 0 || filterStatus === 1) && !groupId && !filteredData) {
+        let z = permissionGroupItems.filter((v) => v.status === filterStatus);
+        console.log('z', z);
+        searchVal = [...z];
+      }
+      if ((filterStatus === 0 || filterStatus === 1) && filteredData && !groupId) {
+        let x = permissionGroupItems.filter((item) => item.name.toLowerCase().includes(filteredData));
+        searchVal = [...x];
+        let z = searchVal.filter((v) => v.status === filterStatus);
+        console.log('z', z);
+        searchVal = [...z];
+      }
+      let paginatedUsers = [];
+      let dataLength = 0;
+      let isDrag = false;
+      if(groupId && !(filterStatus === 0 || filterStatus === 1) && !filteredData){
+        paginatedUsers = searchVal;
+        dataLength = 0;
+        console.log('aaaa')
+        isDrag = true;
+      }
+      else if(req.body.filteredData || filterStatus === 0 || filterStatus === 1 || req.body.filterStatus){
+        console.log('searchVal', searchVal);
+        console.log('startIndex', startIndex, endIndex);
+         paginatedUsers = searchVal.slice(startIndex, endIndex);
+         console.log();
+         console.log('paginatedUsers', paginatedUsers);
+         dataLength = searchVal.length;
+         console.log('bbbb')
+      } 
+      else {
+        paginatedUsers = permissionGroupItems.slice(startIndex, endIndex);
+        dataLength = permissionGroupItems.length; 
+        console.log('cccc')
+      }
+  
+
+      res.json({ data: paginatedUsers, totalData: dataLength , isDrag : isDrag });
     })
     .catch(err => {
       res.json("error:" + err);
